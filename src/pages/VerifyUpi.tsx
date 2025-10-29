@@ -50,6 +50,16 @@ export default function VerifyUpi() {
 
     setLoading(true);
     const extractedUpi = extractUpiId(upiInput);
+    
+    if (!extractedUpi) {
+      toast({
+        title: "Invalid UPI",
+        description: "Could not extract UPI ID from input",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();

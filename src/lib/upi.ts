@@ -1,16 +1,40 @@
 export function extractUpiId(input: string): string {
   if (!input) return "";
   
-  // Check if it's a UPI intent URL
-  if (input.toLowerCase().includes("upi://pay") || input.includes("?pa=")) {
-    const queryString = input.includes("?") ? input.split("?")[1] : input;
-    const params = new URLSearchParams(queryString);
-    const pa = params.get("pa") || params.get("PA");
-    return pa ? decodeURIComponent(pa) : "";
+  const trimmed = input.trim();
+  
+  // Check if it's a UPI intent URL or contains payment parameters
+  if (trimmed.toLowerCase().includes("upi://pay") || trimmed.toLowerCase().includes("?pa=") || trimmed.toLowerCase().includes("&pa=")) {
+    try {
+      // Extract query string - handle both full URLs and raw query strings
+      let queryString = "";
+      
+      if (trimmed.includes("?")) {
+        queryString = trimmed.split("?")[1];
+      } else if (trimmed.toLowerCase().startsWith("pa=")) {
+        queryString = trimmed;
+      } else {
+        return trimmed; // Return as-is if no query params found
+      }
+      
+      const params = new URLSearchParams(queryString);
+      const pa = params.get("pa") || params.get("PA");
+      
+      if (pa) {
+        return decodeURIComponent(pa);
+      }
+    } catch (error) {
+      console.error("Error parsing UPI URL:", error);
+      // Fallback: try to extract pa= manually
+      const paMatch = trimmed.match(/[?&]pa=([^&]+)/i);
+      if (paMatch && paMatch[1]) {
+        return decodeURIComponent(paMatch[1]);
+      }
+    }
   }
   
   // Otherwise treat it as a direct UPI ID
-  return input.trim();
+  return trimmed;
 }
 
 export function createPaymentDeepLink(upiId: string, app: "gpay" | "phonepe" | "paytm"): string {
