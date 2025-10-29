@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { extractUpiId, createPaymentDeepLink, getRiskLevelBadge } from "@/lib/upi";
-import { Upload, Shield, ThumbsUp, ThumbsDown, ExternalLink } from "lucide-react";
+import { Upload, Shield, ThumbsUp, ThumbsDown, ExternalLink, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import jsQR from "jsqr";
@@ -316,30 +316,52 @@ export default function VerifyUpi() {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
+                  <div className="relative">
                     <div className="flex justify-between mb-2">
                       <span className="text-sm text-muted-foreground">Safety Score</span>
-                      <span className="text-sm font-bold">{result.score}/100</span>
+                      <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{result.score}/100</span>
                     </div>
-                    <Progress value={result.score} className="h-3" />
+                    <div className="relative h-4 w-full overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          result.level === "low"
+                            ? "bg-gradient-success shadow-glow-success"
+                            : result.level === "medium"
+                            ? "bg-gradient-warning shadow-glow-warning"
+                            : "bg-gradient-danger shadow-glow-danger"
+                        }`}
+                        style={{ width: `${result.score}%` }}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-secondary/30">
-                      <p className="text-sm text-muted-foreground">Total Reports</p>
-                      <p className="text-2xl font-bold">{result.totalReports}</p>
+                    <div className="p-4 rounded-xl bg-gradient-danger/10 border border-destructive/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
+                        <p className="text-xs text-muted-foreground">Total Reports</p>
+                      </div>
+                      <p className="text-3xl font-bold text-destructive">{result.totalReports}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-secondary/30">
-                      <p className="text-sm text-muted-foreground">Last Seen</p>
-                      <p className="text-sm font-medium">
+                    <div className="p-4 rounded-xl bg-gradient-info/10 border border-info/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="h-4 w-4 text-info" />
+                        <p className="text-xs text-muted-foreground">Last Seen</p>
+                      </div>
+                      <p className="text-sm font-bold text-info">
                         {new Date(result.lastSeen).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-secondary/30">
-                    <p className="text-sm text-muted-foreground mb-1">Analysis</p>
-                    <p className="text-sm">{result.reason}</p>
+                  <div className="p-4 rounded-xl bg-gradient-primary/10 border border-primary/20">
+                    <div className="flex items-start gap-2">
+                      <Shield className="h-5 w-5 text-primary mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-primary mb-1">Analysis</p>
+                        <p className="text-sm text-foreground">{result.reason}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

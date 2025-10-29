@@ -39,6 +39,10 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -74,10 +78,14 @@ export default {
         "gradient-success": "var(--gradient-success)",
         "gradient-warning": "var(--gradient-warning)",
         "gradient-danger": "var(--gradient-danger)",
+        "gradient-info": "var(--gradient-info)",
       },
       boxShadow: {
         glass: "var(--shadow-glass)",
         glow: "var(--shadow-glow)",
+        "glow-success": "var(--shadow-glow-success)",
+        "glow-warning": "var(--shadow-glow-warning)",
+        "glow-danger": "var(--shadow-glow-danger)",
       },
       borderRadius: {
         lg: "var(--radius)",

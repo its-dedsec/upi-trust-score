@@ -8,52 +8,59 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
+    --background: 220 26% 14%;
     --foreground: 210 40% 98%;
 
-    --card: 222 40% 15%;
+    --card: 224 33% 18%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 40% 15%;
+    --popover: 224 33% 18%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 239 84% 67%;
+    --primary: 263 70% 63%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 39% 25%;
+    --secondary: 217 33% 24%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 220 25% 30%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 20% 30%;
+    --muted-foreground: 215 16% 65%;
 
-    --accent: 239 84% 67%;
+    --accent: 280 65% 60%;
     --accent-foreground: 210 40% 98%;
 
-    --success: 160 84% 39%;
+    --success: 142 76% 47%;
     --success-foreground: 210 40% 98%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 11%;
+    --warning: 45 93% 58%;
+    --warning-foreground: 220 26% 14%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 62%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 25% 25%;
-    --input: 220 25% 25%;
-    --ring: 239 84% 67%;
+    --border: 220 20% 25%;
+    --input: 220 20% 25%;
+    --ring: 263 70% 63%;
 
     --radius: 1rem;
 
-    --glass-bg: 222 40% 15% / 0.5;
-    --glass-border: 210 40% 98% / 0.1;
+    --glass-bg: 224 33% 18% / 0.6;
+    --glass-border: 210 40% 98% / 0.15;
 
-    --gradient-primary: linear-gradient(135deg, hsl(239 84% 67%) 0%, hsl(260 84% 67%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(140 84% 39%) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 92% 50%) 100%);
-    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(340 84% 60%) 100%);
+    --info: 199 89% 48%;
+    --info-foreground: 210 40% 98%;
 
-    --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    --shadow-glow: 0 0 40px hsl(239 84% 67% / 0.3);
+    --gradient-primary: linear-gradient(135deg, hsl(263 70% 63%) 0%, hsl(280 65% 60%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 47%) 0%, hsl(158 80% 42%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(45 93% 58%) 0%, hsl(32 95% 55%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(0 72% 62%) 0%, hsl(348 80% 58%) 100%);
+    --gradient-info: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(210 90% 52%) 100%);
+
+    --shadow-glass: 0 8px 32px 0 rgba(17, 24, 39, 0.4);
+    --shadow-glow: 0 0 40px hsl(263 70% 63% / 0.4);
+    --shadow-glow-success: 0 0 30px hsl(142 76% 47% / 0.3);
+    --shadow-glow-warning: 0 0 30px hsl(45 93% 58% / 0.3);
+    --shadow-glow-danger: 0 0 30px hsl(0 72% 62% / 0.3);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }

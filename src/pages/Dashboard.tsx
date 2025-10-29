@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Shield, CheckCircle, TrendingUp } from "lucide-react";
+import { AlertTriangle, Shield, CheckCircle, TrendingUp, Activity, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
 
 interface Stats {
   totalReports: number;
@@ -21,6 +23,8 @@ export default function Dashboard() {
   });
   const [alerts, setAlerts] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [riskDistribution, setRiskDistribution] = useState<any[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -72,6 +76,51 @@ export default function Dashboard() {
       .limit(10);
 
     setRecentActivity(activityData || []);
+
+    // Generate chart data for last 7 days
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return date.toISOString().split('T')[0];
+    });
+
+    const chartDataPromises = last7Days.map(async (date) => {
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+      
+      const [reports, verifs] = await Promise.all([
+        supabase
+          .from("fraud_reports")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", date)
+          .lt("created_at", nextDate.toISOString().split('T')[0]),
+        supabase
+          .from("verifications")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", date)
+          .lt("created_at", nextDate.toISOString().split('T')[0]),
+      ]);
+
+      return {
+        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        reports: reports.count || 0,
+        verifications: verifs.count || 0,
+      };
+    });
+
+    const chartResults = await Promise.all(chartDataPromises);
+    setChartData(chartResults);
+
+    // Calculate risk distribution
+    const lowCount = verifications?.filter(v => v.risk_level === "low").length || 0;
+    const mediumCount = verifications?.filter(v => v.risk_level === "medium").length || 0;
+    const highCount = verifications?.filter(v => v.risk_level === "high").length || 0;
+
+    setRiskDistribution([
+      { name: "Low Risk", value: lowCount, color: "hsl(var(--success))" },
+      { name: "Medium Risk", value: mediumCount, color: "hsl(var(--warning))" },
+      { name: "High Risk", value: highCount, color: "hsl(var(--destructive))" },
+    ]);
   };
 
   return (
@@ -129,6 +178,66 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground">Global Risk %</p>
                 <p className="text-3xl font-bold">{stats.globalRiskPercent}%</p>
               </div>
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <GlassCard className="p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              Activity Trends (7 Days)
+            </h2>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorReports" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorVerifications" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area type="monotone" dataKey="verifications" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorVerifications)" />
+                  <Area type="monotone" dataKey="reports" stroke="hsl(var(--destructive))" fillOpacity={1} fill="url(#colorReports)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              Risk Distribution
+            </h2>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={riskDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {riskDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
           </GlassCard>
         </div>
