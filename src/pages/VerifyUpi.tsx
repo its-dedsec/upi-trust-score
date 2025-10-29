@@ -10,6 +10,7 @@ import { extractUpiId, createPaymentDeepLink, getRiskLevelBadge } from "@/lib/up
 import { Upload, Shield, ThumbsUp, ThumbsDown, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import jsQR from "jsqr";
 
 interface VerificationResult {
   upiId: string;
@@ -30,12 +31,43 @@ export default function VerifyUpi() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // For MVP, we'll just simulate QR reading
-    // In production, you'd use a QR code library like jsQR
-    toast({
-      title: "QR Upload",
-      description: "QR code reading would be implemented here with a library like jsQR",
-    });
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const img = new Image();
+        img.onload = async () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Canvas not supported");
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          if (code && code.data) {
+            const extracted = extractUpiId(code.data);
+            if (extracted) {
+              setUpiInput(extracted);
+              toast({ title: "QR parsed", description: `UPI ID: ${extracted}` });
+            } else {
+              toast({ title: "No UPI found", description: "QR didn't contain a valid UPI 'pa' param", variant: "destructive" });
+            }
+          } else {
+            toast({ title: "Decode failed", description: "Couldn't read a QR code from the image", variant: "destructive" });
+          }
+        };
+        img.onerror = () => {
+          toast({ title: "Invalid image", description: "Please upload a valid QR image", variant: "destructive" });
+        };
+        img.src = reader.result as string;
+      };
+      reader.onerror = () => {
+        toast({ title: "Read error", description: "Failed to read the image file", variant: "destructive" });
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      toast({ title: "QR error", description: err.message || "Unknown error", variant: "destructive" });
+    }
   };
 
   const handleVerify = async () => {

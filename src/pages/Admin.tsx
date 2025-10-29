@@ -31,6 +31,8 @@ export default function Admin() {
   const [editingReport, setEditingReport] = useState<any>(null);
   const [editingUpi, setEditingUpi] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; id: string } | null>(null);
+  const [reportCounts, setReportCounts] = useState<Record<string, number>>({});
+  const [newUpi, setNewUpi] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -54,6 +56,11 @@ export default function Admin() {
 
     setReports(reportsRes.data || []);
     setUpiIdentities(upiRes.data || []);
+    const counts = (reportsRes.data || []).reduce((acc: Record<string, number>, r: any) => {
+      acc[r.upi_identity_id] = (acc[r.upi_identity_id] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    setReportCounts(counts);
   };
 
   const handleResolveReport = async (reportId: string) => {
@@ -181,6 +188,50 @@ export default function Admin() {
     }
   };
 
+  const handleAddUpi = async () => {
+    const upi = newUpi.trim();
+    if (!upi) return;
+    const { error } = await supabase.from("upi_identities").insert({ upi_id: upi });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "UPI added", description: `${upi} added` });
+      setNewUpi("");
+      fetchData();
+    }
+  };
+
+  const handleAddReports = async (identity: any) => {
+    try {
+      const countStr = window.prompt("How many reports to add?", "1");
+      if (!countStr) return;
+      const count = Number(countStr);
+      if (!Number.isFinite(count) || count <= 0 || count > 1000) {
+        toast({ title: "Invalid number", description: "Enter a number between 1 and 1000", variant: "destructive" });
+        return;
+      }
+      const reason = window.prompt("Reason for these reports?", "Admin manual addition") || "Admin manual addition";
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Auth required", description: "Sign in as admin", variant: "destructive" });
+        return;
+      }
+      type NewReport = { upi_identity_id: string; user_id: string; reason: string; status: 'open' | 'resolved' | 'rejected' };
+      const payload: NewReport[] = Array.from({ length: count }).map(() => ({
+        upi_identity_id: identity.id as string,
+        user_id: user.id as string,
+        reason,
+        status: 'open',
+      }));
+      const { error } = await supabase.from("fraud_reports").insert(payload);
+      if (error) throw error;
+      toast({ title: "Reports added", description: `${count} report(s) added to ${identity.upi_id}` });
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to add reports", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -279,6 +330,15 @@ export default function Admin() {
 
           <TabsContent value="identities">
             <GlassCard className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Input
+                  placeholder="Add UPI ID (e.g., user@bank)"
+                  value={newUpi}
+                  onChange={(e) => setNewUpi(e.target.value)}
+                  className="max-w-sm"
+                />
+                <Button onClick={handleAddUpi}>Add UPI</Button>
+              </div>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -293,7 +353,10 @@ export default function Admin() {
                     {upiIdentities.map((identity) => (
                       <TableRow key={identity.id}>
                         <TableCell className="font-medium">
-                          {identity.upi_id}
+                          <div className="flex items-center gap-2">
+                            <span>{identity.upi_id}</span>
+                            <Badge variant="outline">{reportCounts[identity.id] || 0} reports</Badge>
+                          </div>
                         </TableCell>
                         <TableCell>
                           {new Date(identity.created_at).toLocaleDateString()}
@@ -303,6 +366,13 @@ export default function Admin() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAddReports(identity)}
+                            >
+                              Add Reports
+                            </Button>
                             <Button
                               size="sm"
                               variant="outline"
