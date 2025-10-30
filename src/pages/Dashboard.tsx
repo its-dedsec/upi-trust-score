@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Shield, CheckCircle, TrendingUp, Activity, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
+import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 
 interface Stats {
   totalReports: number;
@@ -25,6 +25,23 @@ export default function Dashboard() {
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [riskDistribution, setRiskDistribution] = useState<any[]>([]);
+
+  const activityChartConfig = {
+    reports: {
+      label: "Reports",
+      color: "hsl(var(--destructive))",
+    },
+    verifications: {
+      label: "Verifications",
+      color: "hsl(var(--primary))",
+    },
+  };
+
+  const riskChartConfig = {
+    value: {
+      label: "Risk Level",
+    },
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -190,7 +207,7 @@ export default function Dashboard() {
               Activity Trends (7 Days)
             </h2>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+              <ChartContainer config={activityChartConfig}>
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorReports" x1="0" y1="0" x2="0" y2="1">
@@ -209,7 +226,7 @@ export default function Dashboard() {
                   <Area type="monotone" dataKey="verifications" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorVerifications)" />
                   <Area type="monotone" dataKey="reports" stroke="hsl(var(--destructive))" fillOpacity={1} fill="url(#colorReports)" />
                 </AreaChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             </div>
           </GlassCard>
 
@@ -219,7 +236,7 @@ export default function Dashboard() {
               Risk Distribution
             </h2>
             <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
+              <ChartContainer config={riskChartConfig}>
                 <PieChart>
                   <Pie
                     data={riskDistribution}
@@ -237,7 +254,7 @@ export default function Dashboard() {
                   </Pie>
                   <ChartTooltip content={<ChartTooltipContent />} />
                 </PieChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             </div>
           </GlassCard>
         </div>
