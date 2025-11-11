@@ -39,16 +39,6 @@ export default function Admin() {
   const [newUpi, setNewUpi] = useState("");
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!authLoading && isAuthorized) {
-      fetchData();
-    }
-  }, [authLoading, isAuthorized]);
-
-  if (authLoading || !isAuthorized) {
-    return null;
-  }
-
   const analytics = useMemo(() => {
     const totalReports = reports.length;
     const pendingReports = reports.filter(r => r.status === 'open').length;
@@ -69,6 +59,15 @@ export default function Admin() {
     };
   }, [reports, upiIdentities]);
 
+  useEffect(() => {
+    if (!authLoading && isAuthorized) {
+      fetchData();
+    }
+  }, [authLoading, isAuthorized]);
+
+  if (authLoading || !isAuthorized) {
+    return null;
+  }
   const fetchData = async () => {
     const [reportsRes, upiRes] = await Promise.all([
       supabase
