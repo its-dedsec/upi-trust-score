@@ -297,50 +297,50 @@ export default function Admin() {
 
         {/* Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <GlassCard className="p-6">
+          <GlassCard className="p-6 transition-all duration-300 hover:scale-105 hover:shadow-glow animate-fade-in">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Reports</p>
                 <p className="text-3xl font-bold">{analytics.totalReports}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center transition-transform duration-300 hover:rotate-12">
                 <FileText className="h-6 w-6 text-primary" />
               </div>
             </div>
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard className="p-6 transition-all duration-300 hover:scale-105 hover:shadow-glow-danger animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Pending Reports</p>
                 <p className="text-3xl font-bold text-destructive">{analytics.pendingReports}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center transition-transform duration-300 hover:rotate-12">
                 <AlertCircle className="h-6 w-6 text-destructive" />
               </div>
             </div>
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard className="p-6 transition-all duration-300 hover:scale-105 hover:shadow-glow animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">UPI Identities</p>
                 <p className="text-3xl font-bold">{analytics.totalUpiIdentities}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center transition-transform duration-300 hover:rotate-12">
                 <Wallet className="h-6 w-6 text-accent-foreground" />
               </div>
             </div>
           </GlassCard>
 
-          <GlassCard className="p-6">
+          <GlassCard className="p-6 transition-all duration-300 hover:scale-105 hover:shadow-glow animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Last 7 Days</p>
                 <p className="text-3xl font-bold">{analytics.recentActivity}</p>
                 <p className="text-xs text-muted-foreground mt-1">new reports</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center transition-transform duration-300 hover:rotate-12">
                 <TrendingUp className="h-6 w-6 text-secondary-foreground" />
               </div>
             </div>
@@ -348,12 +348,16 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="reports">Fraud Reports</TabsTrigger>
-            <TabsTrigger value="identities">UPI Identities</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 max-w-md transition-all duration-300">
+            <TabsTrigger value="reports" className="transition-all duration-300 data-[state=active]:scale-105">
+              Fraud Reports
+            </TabsTrigger>
+            <TabsTrigger value="identities" className="transition-all duration-300 data-[state=active]:scale-105">
+              UPI Identities
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="reports">
+          <TabsContent value="reports" className="animate-fade-in">
             <GlassCard className="p-6">
               <div className="overflow-x-auto">
                 <Table>
@@ -435,7 +439,7 @@ export default function Admin() {
             </GlassCard>
           </TabsContent>
 
-          <TabsContent value="identities">
+          <TabsContent value="identities" className="animate-fade-in">
             <GlassCard className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Input
