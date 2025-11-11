@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Navigation } from "@/components/Navigation";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, FileText, AlertCircle, Wallet, TrendingUp } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -48,6 +48,26 @@ export default function Admin() {
   if (authLoading || !isAuthorized) {
     return null;
   }
+
+  const analytics = useMemo(() => {
+    const totalReports = reports.length;
+    const pendingReports = reports.filter(r => r.status === 'open').length;
+    const totalUpiIdentities = upiIdentities.length;
+    
+    // Calculate reports in last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentActivity = reports.filter(
+      r => new Date(r.created_at) >= sevenDaysAgo
+    ).length;
+
+    return {
+      totalReports,
+      pendingReports,
+      totalUpiIdentities,
+      recentActivity
+    };
+  }, [reports, upiIdentities]);
 
   const fetchData = async () => {
     const [reportsRes, upiRes] = await Promise.all([
@@ -275,6 +295,58 @@ export default function Admin() {
         <h1 className="text-4xl font-bold mb-8 bg-gradient-primary bg-clip-text text-transparent">
           Admin Panel
         </h1>
+
+        {/* Analytics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <GlassCard className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Total Reports</p>
+                <p className="text-3xl font-bold">{analytics.totalReports}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Pending Reports</p>
+                <p className="text-3xl font-bold text-destructive">{analytics.pendingReports}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">UPI Identities</p>
+                <p className="text-3xl font-bold">{analytics.totalUpiIdentities}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
+                <Wallet className="h-6 w-6 text-accent-foreground" />
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Last 7 Days</p>
+                <p className="text-3xl font-bold">{analytics.recentActivity}</p>
+                <p className="text-xs text-muted-foreground mt-1">new reports</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-secondary-foreground" />
+              </div>
+            </div>
+          </GlassCard>
+        </div>
 
         <Tabs defaultValue="reports" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 max-w-md">
