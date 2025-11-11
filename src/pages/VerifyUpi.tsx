@@ -11,6 +11,9 @@ import { Upload, Shield, ThumbsUp, ThumbsDown, ExternalLink, AlertTriangle } fro
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import jsQR from "jsqr";
+import { upiIdSchema } from "@/lib/validation";
+import { ZodError } from "zod";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 interface VerificationResult {
   upiId: string;
@@ -22,10 +25,15 @@ interface VerificationResult {
 }
 
 export default function VerifyUpi() {
+  const { isLoading: authLoading, isAuthorized } = useAuthGuard();
   const [upiInput, setUpiInput] = useState("");
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  if (authLoading || !isAuthorized) {
+    return null;
+  }
 
   const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,6 +99,22 @@ export default function VerifyUpi() {
       });
       setLoading(false);
       return;
+    }
+
+    // Validate UPI ID format
+    try {
+      upiIdSchema.parse(extractedUpi);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        toast({
+          title: "Invalid UPI ID",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      throw error;
     }
 
     try {

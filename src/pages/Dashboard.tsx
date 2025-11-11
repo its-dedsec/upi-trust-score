@@ -6,6 +6,7 @@ import { AlertTriangle, Shield, CheckCircle, TrendingUp, Activity, Eye } from "l
 import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 interface Stats {
   totalReports: number;
@@ -15,6 +16,7 @@ interface Stats {
 }
 
 export default function Dashboard() {
+  const { isLoading: authLoading, isAuthorized } = useAuthGuard();
   const [stats, setStats] = useState<Stats>({
     totalReports: 0,
     totalVerifications: 0,
@@ -44,8 +46,14 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (isAuthorized) {
+      fetchDashboardData();
+    }
+  }, [isAuthorized]);
+
+  if (authLoading || !isAuthorized) {
+    return null;
+  }
 
   const fetchDashboardData = async () => {
     // Fetch stats

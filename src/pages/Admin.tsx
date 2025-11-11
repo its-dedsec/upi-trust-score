@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { GlassCard } from "@/components/GlassCard";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { upiIdSchema, addReportsCountSchema } from "@/lib/validation";
+import { ZodError } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +29,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Admin() {
+  const { isLoading: authLoading, isAuthorized } = useAuthGuard(true);
   const [reports, setReports] = useState<any[]>([]);
   const [upiIdentities, setUpiIdentities] = useState<any[]>([]);
   const [editingReport, setEditingReport] = useState<any>(null);
@@ -34,6 +38,10 @@ export default function Admin() {
   const [reportCounts, setReportCounts] = useState<Record<string, number>>({});
   const [newUpi, setNewUpi] = useState("");
   const { toast } = useToast();
+
+  if (authLoading || !isAuthorized) {
+    return null;
+  }
 
   useEffect(() => {
     fetchData();
@@ -191,6 +199,21 @@ export default function Admin() {
   const handleAddUpi = async () => {
     const upi = newUpi.trim();
     if (!upi) return;
+
+    // Validate UPI ID format
+    try {
+      upiIdSchema.parse(upi);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const { error } = await supabase.from("upi_identities").insert({ upi_id: upi });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -206,10 +229,21 @@ export default function Admin() {
       const countStr = window.prompt("How many reports to add?", "1");
       if (!countStr) return;
       const count = Number(countStr);
-      if (!Number.isFinite(count) || count <= 0 || count > 1000) {
-        toast({ title: "Invalid number", description: "Enter a number between 1 and 1000", variant: "destructive" });
-        return;
+      
+      // Validate count
+      try {
+        addReportsCountSchema.parse(count);
+      } catch (error) {
+        if (error instanceof ZodError) {
+          toast({
+            title: "Validation Error",
+            description: error.errors[0].message,
+            variant: "destructive",
+          });
+          return;
+        }
       }
+      
       const reason = window.prompt("Reason for these reports?", "Admin manual addition") || "Admin manual addition";
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {

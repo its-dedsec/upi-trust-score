@@ -10,8 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { extractUpiId } from "@/lib/upi";
 import { CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { fraudReportSchema } from "@/lib/validation";
+import { ZodError } from "zod";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 export default function ReportFraud() {
+  const { isLoading: authLoading, isAuthorized } = useAuthGuard();
   const [upiId, setUpiId] = useState("");
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
@@ -20,6 +24,10 @@ export default function ReportFraud() {
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  if (authLoading || !isAuthorized) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,10 +41,32 @@ export default function ReportFraud() {
           description: "Please sign in to report fraud",
           variant: "destructive",
         });
+        navigate("/auth");
         return;
       }
 
       const extractedUpi = extractUpiId(upiId);
+
+      // Validate inputs
+      try {
+        fraudReportSchema.parse({
+          upiId: extractedUpi,
+          reason,
+          details,
+          evidenceUrl: evidenceUrl || ''
+        });
+      } catch (error) {
+        if (error instanceof ZodError) {
+          toast({
+            title: "Validation Error",
+            description: error.errors[0].message,
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        throw error;
+      }
 
       // Get or create UPI identity
       let { data: upiIdentity, error: upiError } = await supabase
