@@ -15,7 +15,7 @@ const Index = () => {
               <Shield className="h-10 w-10 text-white" />
             </div>
             <h1 className="text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-              UPI TrustScore
+              VeriPay
             </h1>
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
               Community-powered UPI ID verification. Verify before you pay. Stay safe from fraud.
@@ -101,7 +101,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-white/10 py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© 2025 UPI TrustScore. All rights reserved.</p>
+          <p>© 2025 VeriPay. All rights reserved.</p>
         </div>
       </footer>
     </div>

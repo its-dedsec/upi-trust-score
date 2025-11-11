@@ -76,7 +76,7 @@ export default function Auth() {
             <Shield className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            UPI TrustScore
+            VeriPay
           </h1>
           <p className="text-muted-foreground mt-2">
             Verify UPI IDs with community trust
