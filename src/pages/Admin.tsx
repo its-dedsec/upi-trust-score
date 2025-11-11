@@ -39,13 +39,15 @@ export default function Admin() {
   const [newUpi, setNewUpi] = useState("");
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (!authLoading && isAuthorized) {
+      fetchData();
+    }
+  }, [authLoading, isAuthorized]);
+
   if (authLoading || !isAuthorized) {
     return null;
   }
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     const [reportsRes, upiRes] = await Promise.all([
