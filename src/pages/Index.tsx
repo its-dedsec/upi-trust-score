@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/GlassCard";
-import { Shield, Lock, Users, TrendingUp } from "lucide-react";
-import veripayLogo from "@/assets/veripay-logo.png";
+import { Shield, Lock, Users, TrendingUp, Check } from "lucide-react";
 
 const Index = () => {
   return (
@@ -21,8 +20,19 @@ const Index = () => {
         <div className="container mx-auto px-4 py-20 relative">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <div className="inline-flex items-center justify-center mb-8">
-              <img src={veripayLogo} alt="VeriPay Logo" className="h-64 w-auto" />
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl"></div>
+                <div className="relative bg-gradient-to-br from-primary via-accent to-primary p-8 rounded-3xl shadow-glow">
+                  <Shield className="h-20 w-20 text-background" strokeWidth={2.5} />
+                  <div className="absolute -bottom-2 -right-2 bg-background rounded-full p-2 border-4 border-primary">
+                    <Check className="h-8 w-8 text-primary" strokeWidth={3} />
+                  </div>
+                </div>
+              </div>
             </div>
+            <h1 className="text-7xl font-bold mb-6 text-foreground">
+              VERI<span className="text-primary">PAY</span>
+            </h1>
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
               Community-powered UPI ID verification. Verify before you pay. Stay safe from fraud.
             </p>
