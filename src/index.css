@@ -8,60 +8,60 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 26% 14%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 11%;
 
-    --card: 224 33% 18%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 11%;
 
-    --popover: 224 33% 18%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 97%;
+    --popover-foreground: 0 0% 11%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 42 57% 51%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 33% 24%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 206 21% 23%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 20% 30%;
-    --muted-foreground: 215 16% 65%;
+    --muted: 0 0% 82%;
+    --muted-foreground: 0 0% 44%;
 
-    --accent: 199 89% 48%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 42 60% 78%;
+    --accent-foreground: 0 0% 11%;
 
-    --success: 142 76% 47%;
-    --success-foreground: 210 40% 98%;
+    --success: 122 39% 49%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 45 93% 58%;
-    --warning-foreground: 220 26% 14%;
+    --warning: 45 100% 51%;
+    --warning-foreground: 0 0% 11%;
 
-    --destructive: 0 72% 62%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 4 66% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 25%;
-    --input: 220 20% 25%;
-    --ring: 217 91% 60%;
+    --border: 0 0% 82%;
+    --input: 0 0% 82%;
+    --ring: 42 57% 51%;
 
     --radius: 1rem;
 
-    --glass-bg: 224 33% 18% / 0.6;
-    --glass-border: 210 40% 98% / 0.15;
+    --glass-bg: 0 0% 97% / 0.8;
+    --glass-border: 42 57% 51% / 0.15;
 
-    --info: 199 89% 48%;
-    --info-foreground: 210 40% 98%;
+    --info: 207 78% 46%;
+    --info-foreground: 0 0% 100%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(199 89% 48%) 100%);
-    --gradient-primary-animated: linear-gradient(270deg, hsl(217 91% 60%), hsl(199 89% 48%), hsl(217 91% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(142 76% 47%) 0%, hsl(158 80% 42%) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(45 93% 58%) 0%, hsl(32 95% 55%) 100%);
-    --gradient-danger: linear-gradient(135deg, hsl(0 72% 62%) 0%, hsl(348 80% 58%) 100%);
-    --gradient-info: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(210 90% 52%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(42 57% 51%) 0%, hsl(42 72% 39%) 100%);
+    --gradient-primary-animated: linear-gradient(270deg, hsl(42 57% 51%), hsl(42 72% 39%), hsl(42 57% 51%));
+    --gradient-success: linear-gradient(135deg, hsl(122 39% 49%) 0%, hsl(122 39% 42%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(45 100% 45%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(4 66% 51%) 0%, hsl(4 66% 45%) 100%);
+    --gradient-info: linear-gradient(135deg, hsl(207 78% 46%) 0%, hsl(207 78% 40%) 100%);
 
-    --shadow-glass: 0 8px 32px 0 rgba(17, 24, 39, 0.4);
-    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.4);
-    --shadow-glow-success: 0 0 30px hsl(142 76% 47% / 0.3);
-    --shadow-glow-warning: 0 0 30px hsl(45 93% 58% / 0.3);
-    --shadow-glow-danger: 0 0 30px hsl(0 72% 62% / 0.3);
+    --shadow-glass: 0 8px 32px 0 rgba(27, 27, 27, 0.1);
+    --shadow-glow: 0 0 40px hsl(42 57% 51% / 0.4);
+    --shadow-glow-success: 0 0 30px hsl(122 39% 49% / 0.3);
+    --shadow-glow-warning: 0 0 30px hsl(45 100% 51% / 0.3);
+    --shadow-glow-danger: 0 0 30px hsl(4 66% 51% / 0.3);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -73,7 +73,7 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
 }
 

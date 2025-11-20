@@ -9,7 +9,7 @@ const Index = () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/20 to-primary/20 animate-gradient blur-3xl" 
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-accent/10 to-primary/20 animate-gradient blur-3xl" 
              style={{ backgroundImage: 'var(--gradient-primary-animated)' }} />
         
         <div className="container mx-auto px-4 py-20 relative">
@@ -102,7 +102,7 @@ const Index = () => {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8">
+      <footer className="border-t border-border py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
           <p>© 2025 VeriPay. All rights reserved.</p>
         </div>
