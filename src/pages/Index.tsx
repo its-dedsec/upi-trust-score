@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/GlassCard";
 import { Shield, Lock, Users, TrendingUp } from "lucide-react";
+import veripayLogo from "@/assets/veripay-logo.png";
 
 const Index = () => {
   return (
@@ -9,17 +10,13 @@ const Index = () => {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-accent/10 to-primary/20 animate-gradient blur-3xl" 
-             style={{ backgroundImage: 'var(--gradient-primary-animated)' }} />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 animate-gradient" />
         
         <div className="container mx-auto px-4 py-20 relative">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-gradient-primary mb-8 shadow-glow animate-float">
-              <Shield className="h-10 w-10 text-white" />
+            <div className="inline-flex items-center justify-center mb-8 animate-float">
+              <img src={veripayLogo} alt="VeriPay Logo" className="h-48 w-auto" />
             </div>
-            <h1 className="text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-              VeriPay
-            </h1>
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
               Community-powered UPI ID verification. Verify before you pay. Stay safe from fraud.
             </p>
