@@ -8,14 +8,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden bg-gradient-to-b from-background via-secondary/20 to-background">
         {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 animate-gradient" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/15 animate-gradient" />
+        
+        {/* Radial gradient overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+        
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(200,160,57,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(200,160,57,0.05)_1px,transparent_1px)] bg-[size:50px_50px]" />
         
         <div className="container mx-auto px-4 py-20 relative">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
-            <div className="inline-flex items-center justify-center mb-8 animate-float">
-              <img src={veripayLogo} alt="VeriPay Logo" className="h-48 w-auto" />
+            <div className="inline-flex items-center justify-center mb-8">
+              <img src={veripayLogo} alt="VeriPay Logo" className="h-64 w-auto" />
             </div>
             <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
               Community-powered UPI ID verification. Verify before you pay. Stay safe from fraud.
