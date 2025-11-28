@@ -17,6 +17,7 @@ interface UserStat {
   total_reports: number;
   total_verifications: number;
   total_votes: number;
+  display_name: string | null;
 }
 
 export default function Leaderboard() {
@@ -130,7 +131,10 @@ export default function Leaderboard() {
                         {index + 1}
                       </div>
                       <div>
-                        <BadgeDisplay badgeLevel={user.badge_level} size="sm" />
+                        <div className="font-semibold text-lg mb-1">
+                          {user.display_name || `User ${index + 1}`}
+                        </div>
+                        <BadgeDisplay badgeLevel={user.badge_level} size="sm" animate />
                         <div className="text-sm text-muted-foreground mt-1">
                           {user.total_reports} reports · {user.total_verifications} verifications
                         </div>
@@ -150,7 +154,10 @@ export default function Leaderboard() {
                 <>
                   <GlassCard className="p-6">
                     <div className="text-center space-y-4">
-                      <BadgeDisplay badgeLevel={userStats.badge_level} size="lg" className="justify-center" />
+                      {userStats.display_name && (
+                        <h2 className="text-2xl font-bold">{userStats.display_name}</h2>
+                      )}
+                      <BadgeDisplay badgeLevel={userStats.badge_level} size="lg" className="justify-center" animate />
                       <div>
                         <div className="text-3xl font-bold text-primary">{userStats.points}</div>
                         <div className="text-muted-foreground">Total Points</div>
@@ -203,11 +210,11 @@ export default function Leaderboard() {
                           <div
                             key={badge.level}
                             className={cn(
-                              "flex items-center justify-between p-3 rounded-lg border",
+                              "flex items-center justify-between p-3 rounded-lg border transition-all duration-300",
                               isUnlocked ? "border-primary/30 bg-primary/5" : "border-border/30 opacity-50"
                             )}
                           >
-                            <BadgeDisplay badgeLevel={badge.level} size="sm" />
+                            <BadgeDisplay badgeLevel={badge.level} size="sm" animate={isUnlocked} />
                             <div className="text-right">
                               <div className="text-sm font-semibold">{badge.minPoints} pts</div>
                               {isUnlocked ? (

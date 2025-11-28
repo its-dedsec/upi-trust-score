@@ -133,6 +133,7 @@ export type Database = {
         Row: {
           badge_level: string
           created_at: string
+          display_name: string | null
           id: string
           points: number
           total_reports: number
@@ -144,6 +145,7 @@ export type Database = {
         Insert: {
           badge_level?: string
           created_at?: string
+          display_name?: string | null
           id?: string
           points?: number
           total_reports?: number
@@ -155,6 +157,7 @@ export type Database = {
         Update: {
           badge_level?: string
           created_at?: string
+          display_name?: string | null
           id?: string
           points?: number
           total_reports?: number

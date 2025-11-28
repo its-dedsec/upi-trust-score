@@ -27,6 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LeaderboardManager } from "@/components/LeaderboardManager";
 
 export default function Admin() {
   const { isLoading: authLoading, isAuthorized } = useAuthGuard(true);
@@ -348,12 +349,15 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md transition-all duration-300">
+          <TabsList className="grid w-full grid-cols-3 max-w-2xl transition-all duration-300">
             <TabsTrigger value="reports" className="transition-all duration-300 data-[state=active]:scale-105">
               Fraud Reports
             </TabsTrigger>
             <TabsTrigger value="identities" className="transition-all duration-300 data-[state=active]:scale-105">
               UPI Identities
+            </TabsTrigger>
+            <TabsTrigger value="leaderboard" className="transition-all duration-300 data-[state=active]:scale-105">
+              Leaderboard
             </TabsTrigger>
           </TabsList>
 
@@ -505,6 +509,12 @@ export default function Admin() {
                   </TableBody>
                 </Table>
               </div>
+            </GlassCard>
+          </TabsContent>
+
+          <TabsContent value="leaderboard" className="animate-fade-in">
+            <GlassCard className="p-6">
+              <LeaderboardManager />
             </GlassCard>
           </TabsContent>
         </Tabs>
