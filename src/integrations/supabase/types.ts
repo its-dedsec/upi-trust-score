@@ -129,6 +129,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_stats: {
+        Row: {
+          badge_level: string
+          created_at: string
+          id: string
+          points: number
+          total_reports: number
+          total_verifications: number
+          total_votes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_level?: string
+          created_at?: string
+          id?: string
+          points?: number
+          total_reports?: number
+          total_verifications?: number
+          total_votes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_level?: string
+          created_at?: string
+          id?: string
+          points?: number
+          total_reports?: number
+          total_verifications?: number
+          total_votes?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       verification_votes: {
         Row: {
           created_at: string

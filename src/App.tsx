@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import VerifyUpi from "./pages/VerifyUpi";
 import ReportFraud from "./pages/ReportFraud";
 import Admin from "./pages/Admin";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/verify-upi" element={<VerifyUpi />} />
           <Route path="/report-fraud" element={<ReportFraud />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

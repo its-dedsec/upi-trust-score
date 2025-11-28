@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/GlassCard";
+import { TopLeaderboard } from "@/components/TopLeaderboard";
 import { Shield, Lock, Users, TrendingUp, Check } from "lucide-react";
 
 const Index = () => {
@@ -96,6 +97,9 @@ const Index = () => {
           </GlassCard>
         </div>
       </div>
+
+      {/* Top Leaderboard Section */}
+      <TopLeaderboard />
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-20">

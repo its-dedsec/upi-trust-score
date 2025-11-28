@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Shield, LayoutDashboard, AlertTriangle, Settings } from "lucide-react";
+import { Shield, LayoutDashboard, AlertTriangle, Settings, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -85,6 +85,17 @@ export function Navigation() {
               >
                 <AlertTriangle className="h-4 w-4" />
                 Report
+              </Button>
+            </Link>
+
+            <Link to="/leaderboard">
+              <Button
+                variant={isActive("/leaderboard") ? "default" : "ghost"}
+                size="sm"
+                className="gap-2"
+              >
+                <Trophy className="h-4 w-4" />
+                Leaderboard
               </Button>
             </Link>
 
