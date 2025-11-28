@@ -13,6 +13,7 @@ interface UserStat {
   badge_level: string;
   total_reports: number;
   total_verifications: number;
+  display_name: string | null;
 }
 
 export const TopLeaderboard = () => {
@@ -72,7 +73,11 @@ export const TopLeaderboard = () => {
                 {index + 1}
               </div>
 
-              <BadgeDisplay badgeLevel={user.badge_level} size="lg" className="justify-center mb-4" />
+              {user.display_name && (
+                <div className="text-xl font-semibold mb-2">{user.display_name}</div>
+              )}
+
+              <BadgeDisplay badgeLevel={user.badge_level} size="lg" className="justify-center mb-4" animate />
 
               <div className="text-3xl font-bold text-primary mb-2">{user.points}</div>
               <div className="text-sm text-muted-foreground mb-4">points</div>
