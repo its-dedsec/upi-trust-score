@@ -148,8 +148,12 @@ export default function VerifyUpi() {
         throw upiError;
       }
 
-      // Fetch reports and verifications for scoring
-      const [reportsRes, verificationsRes, votesRes] = await Promise.all([
+      // Fetch reports and verifications for scoring (all-time + last 30 days)
+      const [allReportsRes, reportsRes, verificationsRes, votesRes] = await Promise.all([
+        supabase
+          .from("fraud_reports")
+          .select("id")
+          .eq("upi_identity_id", upiIdentity.id),
         supabase
           .from("fraud_reports")
           .select("*")
@@ -167,17 +171,23 @@ export default function VerifyUpi() {
           .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
       ]);
 
+      const totalReports = allReportsRes.data?.length || 0;
       const reports30d = reportsRes.data?.length || 0;
       const verifications30d = verificationsRes.data?.length || 0;
       const unsafeVotes = votesRes.data?.filter(v => v.vote === "unsafe").length || 0;
 
-      // Compute score
+      // Compute score using all-time reports (heavily weighted) + recent activity
       let score = 100;
-      score -= Math.min(reports30d * 10, 60);
+      // All-time reports: each report -5pts, capped at 70 deduction
+      score -= Math.min(totalReports * 5, 70);
+      // Recent reports (30d): extra -3pts each, capped at 20 additional deduction
+      score -= Math.min(reports30d * 3, 20);
+      // Unsafe votes ratio deduction
       const unsafeRatio = verifications30d > 0 ? unsafeVotes / verifications30d : 0;
-      score -= Math.round(unsafeRatio * 30);
+      score -= Math.round(unsafeRatio * 20);
 
-      if (reports30d === 0 && verifications30d >= 3) {
+      // Bonus only if truly no reports ever
+      if (totalReports === 0 && verifications30d >= 3) {
         score = Math.min(score + 5, 100);
       }
 
@@ -185,10 +195,10 @@ export default function VerifyUpi() {
 
       const level = score >= 76 ? "low" : score >= 40 ? "medium" : "high";
       const reason =
-        reports30d === 0 && verifications30d >= 3
+        totalReports === 0 && verifications30d >= 3
           ? "No reports, multiple verifications - low risk"
-          : reports30d > 0
-          ? `${reports30d} reports in last 30 days`
+          : totalReports > 0
+          ? `${totalReports} total reports (${reports30d} in last 30 days)`
           : "Insufficient data";
 
       // Save verification
@@ -211,7 +221,7 @@ export default function VerifyUpi() {
         score,
         level,
         reason,
-        totalReports: reports30d,
+        totalReports: totalReports,
         lastSeen: upiIdentity.last_seen_at,
       });
     } catch (error: any) {
