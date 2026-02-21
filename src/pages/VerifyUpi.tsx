@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { extractUpiId, createPaymentDeepLink, getRiskLevelBadge } from "@/lib/upi";
-import { Upload, Shield, ThumbsUp, ThumbsDown, ExternalLink, AlertTriangle } from "lucide-react";
+import { Upload, Shield, ShieldCheck, ShieldAlert, ShieldX, ThumbsUp, ThumbsDown, ExternalLink, AlertTriangle, Search, QrCode, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Progress } from "@/components/ui/progress";
 import jsQR from "jsqr";
 import { upiIdSchema } from "@/lib/validation";
 import { ZodError } from "zod";
@@ -29,6 +28,7 @@ export default function VerifyUpi() {
   const [upiInput, setUpiInput] = useState("");
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [voted, setVoted] = useState<"safe" | "unsafe" | null>(null);
   const { toast } = useToast();
 
   if (authLoading || !isAuthorized) {
@@ -89,6 +89,8 @@ export default function VerifyUpi() {
     }
 
     setLoading(true);
+    setResult(null);
+    setVoted(null);
     const extractedUpi = extractUpiId(upiInput);
     
     if (!extractedUpi) {
@@ -101,7 +103,6 @@ export default function VerifyUpi() {
       return;
     }
 
-    // Validate UPI ID format
     try {
       upiIdSchema.parse(extractedUpi);
     } catch (error) {
@@ -128,7 +129,6 @@ export default function VerifyUpi() {
         return;
       }
 
-      // Get or create UPI identity
       let { data: upiIdentity, error: upiError } = await supabase
         .from("upi_identities")
         .select("*")
@@ -148,7 +148,6 @@ export default function VerifyUpi() {
         throw upiError;
       }
 
-      // Fetch reports and verifications for scoring (all-time + last 30 days)
       const [allReportsRes, reportsRes, verificationsRes, votesRes] = await Promise.all([
         supabase
           .from("fraud_reports")
@@ -176,17 +175,12 @@ export default function VerifyUpi() {
       const verifications30d = verificationsRes.data?.length || 0;
       const unsafeVotes = votesRes.data?.filter(v => v.vote === "unsafe").length || 0;
 
-      // Compute score using all-time reports (heavily weighted) + recent activity
       let score = 100;
-      // All-time reports: each report -5pts, capped at 70 deduction
       score -= Math.min(totalReports * 5, 70);
-      // Recent reports (30d): extra -3pts each, capped at 20 additional deduction
       score -= Math.min(reports30d * 3, 20);
-      // Unsafe votes ratio deduction
       const unsafeRatio = verifications30d > 0 ? unsafeVotes / verifications30d : 0;
       score -= Math.round(unsafeRatio * 20);
 
-      // Bonus only if truly no reports ever
       if (totalReports === 0 && verifications30d >= 3) {
         score = Math.min(score + 5, 100);
       }
@@ -201,7 +195,6 @@ export default function VerifyUpi() {
           ? `${totalReports} total reports (${reports30d} in last 30 days)`
           : "Insufficient data";
 
-      // Save verification
       await supabase.from("verifications").insert({
         upi_identity_id: upiIdentity.id,
         user_id: user.id,
@@ -210,7 +203,6 @@ export default function VerifyUpi() {
         reason,
       });
 
-      // Update last seen
       await supabase
         .from("upi_identities")
         .update({ last_seen_at: new Date().toISOString() })
@@ -278,6 +270,7 @@ export default function VerifyUpi() {
           throw error;
         }
       } else {
+        setVoted(vote);
         toast({
           title: "Vote recorded",
           description: `Marked as ${vote}`,
@@ -292,170 +285,266 @@ export default function VerifyUpi() {
     }
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 76) return "text-success";
+    if (score >= 40) return "text-warning";
+    return "text-destructive";
+  };
+
+  const getScoreBarClass = (level: string) => {
+    if (level === "low") return "bg-gradient-success shadow-glow-success";
+    if (level === "medium") return "bg-gradient-warning shadow-glow-warning";
+    return "bg-gradient-danger shadow-glow-danger";
+  };
+
+  const getRiskIcon = (level: string) => {
+    if (level === "low") return <ShieldCheck className="h-8 w-8 text-success" />;
+    if (level === "medium") return <ShieldAlert className="h-8 w-8 text-warning" />;
+    return <ShieldX className="h-8 w-8 text-destructive" />;
+  };
+
+  const getRiskLabel = (level: string) => {
+    if (level === "low") return "Low Risk — Likely Safe";
+    if (level === "medium") return "Medium Risk — Use Caution";
+    return "High Risk — Potentially Fraudulent";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 bg-gradient-primary bg-clip-text text-transparent">
-          Verify UPI ID
-        </h1>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Hero */}
+        <div className="text-center mb-10 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
+            <Shield className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+            Verify UPI ID
+          </h1>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Check any UPI ID or scan a QR code to get an instant safety score before you pay.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <GlassCard className="p-8">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="upiInput">UPI ID or Payment Link</Label>
+        {/* Input Card */}
+        <GlassCard className="p-6 md:p-8 mb-8 animate-fade-in" hover>
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="upiInput" className="text-sm font-medium text-foreground flex items-center gap-2">
+                <Search className="h-4 w-4 text-primary" />
+                UPI ID or Payment Link
+              </Label>
+              <div className="flex gap-3">
                 <Input
                   id="upiInput"
-                  placeholder="user@bank or upi://pay?pa=..."
+                  placeholder="e.g. user@bank or upi://pay?pa=..."
                   value={upiInput}
                   onChange={(e) => setUpiInput(e.target.value)}
-                  className="bg-secondary/50"
+                  onKeyDown={(e) => e.key === "Enter" && handleVerify()}
+                  className="bg-secondary/50 flex-1 h-12 text-base"
                 />
+                <Button
+                  onClick={handleVerify}
+                  disabled={loading}
+                  size="lg"
+                  className="h-12 px-6 gap-2"
+                >
+                  {loading ? (
+                    <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4" />
+                  )}
+                  {loading ? "Checking..." : "Verify"}
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="qrUpload">Or Upload QR Code</Label>
-                <div className="flex items-center gap-4">
-                  <Input
-                    id="qrUpload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleQrUpload}
-                    className="bg-secondary/50"
-                  />
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                </div>
-              </div>
-
-              <Button
-                onClick={handleVerify}
-                disabled={loading}
-                className="w-full"
-                size="lg"
-              >
-                {loading ? "Verifying..." : "Verify UPI ID"}
-              </Button>
             </div>
-          </GlassCard>
 
-          {result && (
-            <GlassCard className="p-8">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold">{result.upiId}</h2>
-                  <Badge variant={getRiskLevelBadge(result.level)}>
-                    {result.level.toUpperCase()}
-                  </Badge>
+            <div className="flex items-center gap-4">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground uppercase tracking-wider">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <div>
+              <Label htmlFor="qrUpload" className="cursor-pointer">
+                <div className="flex items-center justify-center gap-3 p-4 rounded-xl border-2 border-dashed border-border hover:border-primary/40 transition-colors bg-secondary/20">
+                  <QrCode className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    Upload a QR Code image to auto-extract UPI ID
+                  </span>
+                </div>
+              </Label>
+              <Input
+                id="qrUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleQrUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Results */}
+        {result && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Score Hero */}
+            <GlassCard className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                {/* Score Circle */}
+                <div className="relative flex-shrink-0">
+                  <div className={`w-32 h-32 rounded-full border-4 flex flex-col items-center justify-center ${
+                    result.level === "low" ? "border-success/40 bg-success/5" :
+                    result.level === "medium" ? "border-warning/40 bg-warning/5" :
+                    "border-destructive/40 bg-destructive/5"
+                  }`}>
+                    <span className={`text-4xl font-bold ${getScoreColor(result.score)}`}>
+                      {result.score}
+                    </span>
+                    <span className="text-xs text-muted-foreground">/100</span>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="relative">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-muted-foreground">Safety Score</span>
-                      <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{result.score}/100</span>
-                    </div>
-                    <div className="relative h-4 w-full overflow-hidden rounded-full bg-secondary">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          result.level === "low"
-                            ? "bg-gradient-success shadow-glow-success"
-                            : result.level === "medium"
-                            ? "bg-gradient-warning shadow-glow-warning"
-                            : "bg-gradient-danger shadow-glow-danger"
-                        }`}
-                        style={{ width: `${result.score}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-xl bg-gradient-danger/10 border border-destructive/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle className="h-4 w-4 text-destructive" />
-                        <p className="text-xs text-muted-foreground">Total Reports</p>
-                      </div>
-                      <p className="text-3xl font-bold text-destructive">{result.totalReports}</p>
-                    </div>
-                    <div className="p-4 rounded-xl bg-gradient-info/10 border border-info/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield className="h-4 w-4 text-info" />
-                        <p className="text-xs text-muted-foreground">Last Seen</p>
-                      </div>
-                      <p className="text-sm font-bold text-info">
-                        {new Date(result.lastSeen).toLocaleDateString()}
+                {/* Info */}
+                <div className="flex-1 text-center md:text-left space-y-3">
+                  <div className="flex flex-col md:flex-row items-center gap-3">
+                    {getRiskIcon(result.level)}
+                    <div>
+                      <h2 className="text-xl font-bold text-foreground">{result.upiId}</h2>
+                      <p className={`text-sm font-medium ${getScoreColor(result.score)}`}>
+                        {getRiskLabel(result.level)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-gradient-primary/10 border border-primary/20">
-                    <div className="flex items-start gap-2">
-                      <Shield className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium text-primary mb-1">Analysis</p>
-                        <p className="text-sm text-foreground">{result.reason}</p>
-                      </div>
+                  {/* Score Bar */}
+                  <div className="w-full">
+                    <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className={`h-full transition-all duration-700 ease-out rounded-full ${getScoreBarClass(result.level)}`}
+                        style={{ width: `${result.score}%` }}
+                      />
                     </div>
                   </div>
-                </div>
-
-                {result.level === "low" && (
-                  <div className="space-y-3 pt-4 border-t border-white/10">
-                    <p className="text-sm font-medium">Quick Pay</p>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => window.open(createPaymentDeepLink(result.upiId, "gpay"))}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        GPay
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => window.open(createPaymentDeepLink(result.upiId, "phonepe"))}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        PhonePe
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => window.open(createPaymentDeepLink(result.upiId, "paytm"))}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Paytm
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-4 border-t border-white/10">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleVote("safe")}
-                  >
-                    <ThumbsUp className="h-4 w-4 mr-2" />
-                    Safe
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleVote("unsafe")}
-                  >
-                    <ThumbsDown className="h-4 w-4 mr-2" />
-                    Unsafe
-                  </Button>
                 </div>
               </div>
             </GlassCard>
-          )}
-        </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <GlassCard className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-destructive/10">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                  </div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Total Reports</span>
+                </div>
+                <p className="text-3xl font-bold text-foreground">{result.totalReports}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {result.totalReports === 0 ? "No fraud reports filed" : "Fraud reports on record"}
+                </p>
+              </GlassCard>
+
+              <GlassCard className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-info/10">
+                    <Shield className="h-4 w-4 text-info" />
+                  </div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Last Seen</span>
+                </div>
+                <p className="text-lg font-bold text-foreground">
+                  {new Date(result.lastSeen).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Last verification date</p>
+              </GlassCard>
+
+              <GlassCard className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Search className="h-4 w-4 text-primary" />
+                  </div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Analysis</span>
+                </div>
+                <p className="text-sm font-medium text-foreground leading-relaxed">{result.reason}</p>
+              </GlassCard>
+            </div>
+
+            {/* Quick Pay */}
+            {result.level === "low" && (
+              <GlassCard className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <h3 className="font-semibold text-foreground">Quick Pay — This UPI ID looks safe</h3>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "GPay", app: "gpay" as const },
+                    { label: "PhonePe", app: "phonepe" as const },
+                    { label: "Paytm", app: "paytm" as const },
+                  ].map(({ label, app }) => (
+                    <Button
+                      key={app}
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => window.open(createPaymentDeepLink(result.upiId, app))}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </GlassCard>
+            )}
+
+            {/* Community Vote */}
+            <GlassCard className="p-5">
+              <h3 className="font-semibold text-foreground mb-1">Community Feedback</h3>
+              <p className="text-xs text-muted-foreground mb-4">Help others — did this UPI ID feel safe or suspicious to you?</p>
+              <div className="flex gap-3">
+                <Button
+                  variant={voted === "safe" ? "default" : "outline"}
+                  className={`flex-1 gap-2 ${voted === "safe" ? "bg-success hover:bg-success/90 text-success-foreground" : ""}`}
+                  onClick={() => handleVote("safe")}
+                  disabled={voted !== null}
+                >
+                  <ThumbsUp className="h-4 w-4" />
+                  Safe
+                </Button>
+                <Button
+                  variant={voted === "unsafe" ? "default" : "outline"}
+                  className={`flex-1 gap-2 ${voted === "unsafe" ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground" : ""}`}
+                  onClick={() => handleVote("unsafe")}
+                  disabled={voted !== null}
+                >
+                  <ThumbsDown className="h-4 w-4" />
+                  Unsafe
+                </Button>
+              </div>
+              {voted && (
+                <p className="text-xs text-muted-foreground text-center mt-3">
+                  Thanks for your feedback! Your vote helps keep the community safe.
+                </p>
+              )}
+            </GlassCard>
+          </div>
+        )}
+
+        {/* Empty state hint */}
+        {!result && !loading && (
+          <div className="text-center py-12 animate-fade-in">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-secondary/50 mb-4">
+              <Shield className="h-10 w-10 text-muted-foreground/50" />
+            </div>
+            <p className="text-muted-foreground text-sm">
+              Enter a UPI ID above to check its safety score
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
