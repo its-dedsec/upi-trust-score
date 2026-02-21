@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { extractUpiId } from "@/lib/upi";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, AlertTriangle, FileText, Link2, Send, ShieldAlert, ArrowRight, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { fraudReportSchema } from "@/lib/validation";
 import { ZodError } from "zod";
@@ -47,7 +47,6 @@ export default function ReportFraud() {
 
       const extractedUpi = extractUpiId(upiId);
 
-      // Validate inputs
       try {
         fraudReportSchema.parse({
           upiId: extractedUpi,
@@ -68,7 +67,6 @@ export default function ReportFraud() {
         throw error;
       }
 
-      // Get or create UPI identity
       let { data: upiIdentity, error: upiError } = await supabase
         .from("upi_identities")
         .select("*")
@@ -88,7 +86,6 @@ export default function ReportFraud() {
         throw upiError;
       }
 
-      // Create fraud report
       const { error: reportError } = await supabase
         .from("fraud_reports")
         .insert({
@@ -120,116 +117,202 @@ export default function ReportFraud() {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
-        <div className="container mx-auto px-4 py-16">
-          <div className="max-w-2xl mx-auto">
-            <GlassCard className="p-12 text-center">
-              <div className="h-20 w-20 mx-auto rounded-full bg-gradient-success flex items-center justify-center mb-6">
-                <CheckCircle className="h-10 w-10 text-white" />
-              </div>
-              <h1 className="text-3xl font-bold mb-4">Report Submitted</h1>
-              <p className="text-muted-foreground mb-8">
-                Your fraud report has been received and will be reviewed by our team.
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Button
-                  onClick={() => navigate(`/verify-upi?upi=${extractUpiId(upiId)}`)}
-                >
-                  View UPI Details
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSubmitted(false);
-                    setUpiId("");
-                    setReason("");
-                    setDetails("");
-                    setEvidenceUrl("");
-                  }}
-                >
-                  Report Another
-                </Button>
-              </div>
-            </GlassCard>
-          </div>
+        <div className="container mx-auto px-4 py-16 max-w-lg">
+          <GlassCard className="p-10 text-center animate-fade-in">
+            <div className="w-20 h-20 mx-auto rounded-full bg-success/10 border-2 border-success/30 flex items-center justify-center mb-6">
+              <CheckCircle className="h-10 w-10 text-success" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Report Submitted</h1>
+            <p className="text-muted-foreground mb-2 text-sm">
+              Your fraud report has been received and will be reviewed by our team.
+            </p>
+            <p className="text-xs text-muted-foreground mb-8">
+              You earned <span className="text-primary font-semibold">+10 points</span> for this contribution!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button
+                onClick={() => navigate(`/verify-upi?upi=${extractUpiId(upiId)}`)}
+                className="gap-2"
+              >
+                View UPI Details
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSubmitted(false);
+                  setUpiId("");
+                  setReason("");
+                  setDetails("");
+                  setEvidenceUrl("");
+                }}
+              >
+                Report Another
+              </Button>
+            </div>
+          </GlassCard>
         </div>
       </div>
     );
   }
 
+  const filledSteps = [upiId.trim(), reason.trim(), details.trim()].filter(Boolean).length;
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 bg-gradient-primary bg-clip-text text-transparent">
-          Report Fraud
-        </h1>
-
-        <div className="max-w-2xl">
-          <GlassCard className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="upiId">UPI ID *</Label>
-                <Input
-                  id="upiId"
-                  placeholder="user@bank or upi://pay?pa=..."
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  required
-                  className="bg-secondary/50"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="reason">Reason *</Label>
-                <Input
-                  id="reason"
-                  placeholder="E.g., Phishing attempt, fake merchant, etc."
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  required
-                  className="bg-secondary/50"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="details">Details *</Label>
-                <Textarea
-                  id="details"
-                  placeholder="Please provide as much detail as possible about the fraudulent activity..."
-                  value={details}
-                  onChange={(e) => setDetails(e.target.value)}
-                  required
-                  rows={6}
-                  className="bg-secondary/50"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="evidenceUrl">Evidence URL (Optional)</Label>
-                <Input
-                  id="evidenceUrl"
-                  type="url"
-                  placeholder="https://example.com/screenshot.jpg"
-                  value={evidenceUrl}
-                  onChange={(e) => setEvidenceUrl(e.target.value)}
-                  className="bg-secondary/50"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Upload your evidence to a file hosting service and paste the link here
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full"
-                size="lg"
-              >
-                {loading ? "Submitting..." : "Submit Report"}
-              </Button>
-            </form>
-          </GlassCard>
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        {/* Hero */}
+        <div className="text-center mb-10 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-destructive/10 border border-destructive/20 mb-4">
+            <ShieldAlert className="h-8 w-8 text-destructive" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+            Report Fraud
+          </h1>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Help protect the community by reporting suspicious UPI IDs. Every report counts.
+          </p>
         </div>
+
+        {/* Progress indicator */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {[1, 2, 3].map((step) => (
+            <div key={step} className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                filledSteps >= step
+                  ? "bg-primary text-primary-foreground shadow-glow"
+                  : "bg-secondary text-muted-foreground"
+              }`}>
+                {step}
+              </div>
+              {step < 3 && (
+                <div className={`w-12 h-0.5 rounded-full transition-all duration-300 ${
+                  filledSteps > step ? "bg-primary" : "bg-border"
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <GlassCard className="p-6 md:p-8 animate-fade-in" hover>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* UPI ID */}
+            <div className="space-y-2">
+              <Label htmlFor="upiId" className="text-sm font-medium flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-primary">1</span>
+                </div>
+                UPI ID
+              </Label>
+              <Input
+                id="upiId"
+                placeholder="e.g. scammer@bank or upi://pay?pa=..."
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+                required
+                className="bg-secondary/50 h-12"
+              />
+            </div>
+
+            {/* Reason */}
+            <div className="space-y-2">
+              <Label htmlFor="reason" className="text-sm font-medium flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-primary">2</span>
+                </div>
+                Reason
+              </Label>
+              <Input
+                id="reason"
+                placeholder="e.g. Phishing attempt, fake merchant, money not received..."
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                required
+                className="bg-secondary/50 h-12"
+              />
+              <div className="flex flex-wrap gap-2 mt-1">
+                {["Phishing", "Fake merchant", "Money not received", "Impersonation"].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setReason(tag)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                      reason === tag
+                        ? "border-primary/50 bg-primary/10 text-primary"
+                        : "border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Details */}
+            <div className="space-y-2">
+              <Label htmlFor="details" className="text-sm font-medium flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-primary">3</span>
+                </div>
+                Details
+              </Label>
+              <Textarea
+                id="details"
+                placeholder="Describe the fraudulent activity in detail — when it happened, how much was involved, what communication you received..."
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                required
+                rows={5}
+                className="bg-secondary/50 resize-none"
+              />
+            </div>
+
+            {/* Evidence */}
+            <div className="space-y-2">
+              <Label htmlFor="evidenceUrl" className="text-sm font-medium flex items-center gap-2">
+                <Link2 className="h-4 w-4 text-muted-foreground" />
+                Evidence URL
+                <span className="text-xs text-muted-foreground font-normal">(optional)</span>
+              </Label>
+              <Input
+                id="evidenceUrl"
+                type="url"
+                placeholder="https://example.com/screenshot.jpg"
+                value={evidenceUrl}
+                onChange={(e) => setEvidenceUrl(e.target.value)}
+                className="bg-secondary/50"
+              />
+            </div>
+
+            {/* Info banner */}
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-info/5 border border-info/20">
+              <Info className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Your report is anonymous to other users. Our team reviews every report to ensure fairness. False reports may result in account penalties.
+              </p>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading || !upiId.trim() || !reason.trim() || !details.trim()}
+              className="w-full h-12 gap-2 text-base"
+              size="lg"
+            >
+              {loading ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Submit Report
+                </>
+              )}
+            </Button>
+          </form>
+        </GlassCard>
       </div>
     </div>
   );
