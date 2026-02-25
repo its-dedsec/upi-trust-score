@@ -14,11 +14,39 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [diagnosticHint, setDiagnosticHint] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const clearSupabaseAuthStorage = () => {
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith("sb-") && key.includes("auth-token"))
+      .forEach((key) => localStorage.removeItem(key));
+  };
+
+  const resetLocalAuthState = async () => {
+    await supabase.auth.signOut({ scope: "local" });
+    clearSupabaseAuthStorage();
+  };
+
+  const isNetworkFetchError = (error: unknown) => {
+    if (error instanceof TypeError && error.message === "Failed to fetch") return true;
+    if (typeof error === "object" && error && "name" in error) {
+      return (error as { name?: string }).name === "AuthRetryableFetchError";
+    }
+    return false;
+  };
+
   useEffect(() => {
-    checkUser();
+    const initializeAuth = async () => {
+      try {
+        await checkUser();
+      } catch {
+        // Keep auth screen usable even if initial session fetch fails.
+      }
+    };
+
+    void initializeAuth();
   }, []);
 
   const checkUser = async () => {
@@ -59,11 +87,21 @@ export default function Auth() {
         navigate("/dashboard");
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (isNetworkFetchError(error)) {
+        await resetLocalAuthState();
+        setDiagnosticHint("Cannot reach Supabase from this browser. Disable VPN/adblock, or try another network.");
+        toast({
+          title: "Network error",
+          description: "Could not reach Supabase. Local auth cache was reset—please try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -201,6 +239,23 @@ export default function Auth() {
                 )}
               </Button>
             </form>
+
+            {diagnosticHint && (
+              <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
+                <p className="text-xs text-destructive">{diagnosticHint}</p>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await resetLocalAuthState();
+                    setDiagnosticHint(null);
+                    toast({ title: "Done", description: "Local auth cache reset. Try signing in again." });
+                  }}
+                  className="mt-2 text-xs font-medium text-primary hover:underline"
+                >
+                  Reset auth cache again
+                </button>
+              </div>
+            )}
 
             <div className="mt-6 text-center space-y-4">
               <div className="relative">
