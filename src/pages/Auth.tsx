@@ -15,8 +15,12 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [diagnosticHint, setDiagnosticHint] = useState<string | null>(null);
+  const [isCheckingConnection, setIsCheckingConnection] = useState(false);
+  const [connectionStatusMessage, setConnectionStatusMessage] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   const clearSupabaseAuthStorage = () => {
     Object.keys(localStorage)
@@ -35,6 +39,77 @@ export default function Auth() {
       return (error as { name?: string }).name === "AuthRetryableFetchError";
     }
     return false;
+  };
+
+  const runConnectionDiagnostics = async () => {
+    setIsCheckingConnection(true);
+    setConnectionStatusMessage(null);
+
+    try {
+      const [authHealthResult, restResult] = await Promise.allSettled([
+        fetch(`${supabaseUrl}/auth/v1/health`, {
+          headers: {
+            apikey: supabaseAnonKey,
+          },
+        }),
+        fetch(`${supabaseUrl}/rest/v1/user_stats?select=id&limit=1`, {
+          headers: {
+            apikey: supabaseAnonKey,
+            Authorization: `Bearer ${supabaseAnonKey}`,
+          },
+        }),
+      ]);
+
+      const authReachable = authHealthResult.status === "fulfilled";
+      const restReachable = restResult.status === "fulfilled";
+      const authStatus = authReachable ? authHealthResult.value.status : "blocked";
+      const restStatus = restReachable ? restResult.value.status : "blocked";
+
+      if (authReachable && restReachable) {
+        setConnectionStatusMessage(`Supabase reachable (auth:${authStatus} / rest:${restStatus}).`);
+        setDiagnosticHint(null);
+        toast({
+          title: "Connection healthy",
+          description: "Supabase endpoints are reachable from this browser.",
+        });
+        return;
+      }
+
+      if (authReachable && !restReachable) {
+        setConnectionStatusMessage("Auth endpoint is reachable but data endpoint is blocked from this browser.");
+        setDiagnosticHint(
+          "Auth is reachable, but REST requests are blocked. Disable VPN/adblock/firewall, then retry."
+        );
+        toast({
+          title: "Partial connectivity",
+          description: "Supabase auth works, but REST endpoint is blocked from this browser.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setConnectionStatusMessage("Connection test failed. This browser/network cannot reach Supabase.");
+      setDiagnosticHint(
+        "Supabase is blocked from this browser/network. Disable VPN/adblock/firewall or switch network (mobile hotspot)."
+      );
+      toast({
+        title: "Connection blocked",
+        description: "This browser cannot reach Supabase endpoints.",
+        variant: "destructive",
+      });
+    } catch {
+      setConnectionStatusMessage("Connection test failed. This browser/network cannot reach Supabase.");
+      setDiagnosticHint(
+        "Supabase is blocked from this browser/network. Disable VPN/adblock/firewall or switch network (mobile hotspot)."
+      );
+      toast({
+        title: "Connection blocked",
+        description: "This browser cannot reach Supabase endpoints.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingConnection(false);
+    }
   };
 
   useEffect(() => {
@@ -89,7 +164,10 @@ export default function Auth() {
     } catch (error: any) {
       if (isNetworkFetchError(error)) {
         await resetLocalAuthState();
-        setDiagnosticHint("Cannot reach Supabase from this browser. Disable VPN/adblock, or try another network.");
+        await runConnectionDiagnostics();
+        setDiagnosticHint((current) =>
+          current ?? "Cannot reach Supabase from this browser. Disable VPN/adblock, or try another network."
+        );
         toast({
           title: "Network error",
           description: "Could not reach Supabase. Local auth cache was reset—please try again.",
@@ -240,9 +318,34 @@ export default function Auth() {
               </Button>
             </form>
 
+            <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs text-muted-foreground">
+                  {connectionStatusMessage ?? "Trouble logging in? Run a Supabase connection test from this browser."}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={runConnectionDiagnostics}
+                  disabled={isCheckingConnection}
+                >
+                  {isCheckingConnection ? "Testing..." : "Run test"}
+                </Button>
+              </div>
+            </div>
+
             {diagnosticHint && (
               <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3">
                 <p className="text-xs text-destructive">{diagnosticHint}</p>
+                <a
+                  href={`${supabaseUrl}/auth/v1/health`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 inline-block text-xs font-medium text-primary hover:underline"
+                >
+                  Open Supabase health endpoint
+                </a>
                 <button
                   type="button"
                   onClick={async () => {
@@ -250,7 +353,7 @@ export default function Auth() {
                     setDiagnosticHint(null);
                     toast({ title: "Done", description: "Local auth cache reset. Try signing in again." });
                   }}
-                  className="mt-2 text-xs font-medium text-primary hover:underline"
+                  className="mt-2 block text-xs font-medium text-primary hover:underline"
                 >
                   Reset auth cache again
                 </button>
