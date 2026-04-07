@@ -315,8 +315,41 @@ export default function Auth() {
                     <ArrowRight className="h-4 w-4" />
                   </span>
                 )}
-              </Button>
+            </Button>
             </form>
+
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-card px-3 text-muted-foreground">or continue with</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 text-base gap-3"
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/dashboard`,
+                  },
+                });
+                if (error) {
+                  toast({
+                    title: "Error",
+                    description: error.message,
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              <Chrome className="h-5 w-5" />
+              Sign in with Google
+            </Button>
 
             <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-3">
               <div className="flex items-center justify-between gap-3">
