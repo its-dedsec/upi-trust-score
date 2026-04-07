@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Shield, LayoutDashboard, AlertTriangle, Settings, Trophy } from "lucide-react";
+import { Shield, LayoutDashboard, AlertTriangle, Settings, Trophy, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -111,6 +111,17 @@ export function Navigation() {
                 </Button>
               </Link>
             )}
+
+            <Link to="/profile">
+              <Button
+                variant={isActive("/profile") ? "default" : "ghost"}
+                size="sm"
+                className="gap-2"
+              >
+                <UserCircle className="h-4 w-4" />
+                Profile
+              </Button>
+            </Link>
 
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               Sign Out
