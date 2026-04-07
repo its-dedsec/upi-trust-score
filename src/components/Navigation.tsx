@@ -112,6 +112,17 @@ export function Navigation() {
               </Link>
             )}
 
+            <Link to="/profile">
+              <Button
+                variant={isActive("/profile") ? "default" : "ghost"}
+                size="sm"
+                className="gap-2"
+              >
+                <UserCircle className="h-4 w-4" />
+                Profile
+              </Button>
+            </Link>
+
             <Button variant="outline" size="sm" onClick={handleSignOut}>
               Sign Out
             </Button>
