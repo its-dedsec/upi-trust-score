@@ -10,6 +10,7 @@ import VerifyUpi from "./pages/VerifyUpi";
 import ReportFraud from "./pages/ReportFraud";
 import Admin from "./pages/Admin";
 import Leaderboard from "./pages/Leaderboard";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
