@@ -2,68 +2,115 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Apple HIG–inspired design system. All colors are HSL. */
 
 @layer base {
   :root {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 92%;
+    /* Light theme — Apple-style clean neutrals */
+    --background: 0 0% 99%;
+    --foreground: 240 6% 10%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 92%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 6% 10%;
 
-    --popover: 210 10% 14%;
-    --popover-foreground: 0 0% 92%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 6% 10%;
 
-    --primary: 42 57% 51%;
+    --primary: 42 57% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 206 21% 23%;
-    --secondary-foreground: 0 0% 92%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
 
-    --muted: 210 11% 25%;
-    --muted-foreground: 0 0% 72%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    --accent: 42 65% 58%;
-    --accent-foreground: 0 0% 5%;
+    --accent: 42 65% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --success: 122 39% 49%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 45 100% 51%;
-    --warning-foreground: 0 0% 5%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 10%;
 
-    --destructive: 4 90% 64%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 24%;
-    --input: 0 0% 24%;
-    --ring: 42 57% 51%;
+    --info: 211 100% 50%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 42 57% 45%;
 
     --radius: 1rem;
 
-    --glass-bg: 0 0% 10% / 0.6;
-    --glass-border: 42 57% 51% / 0.2;
-
-    --info: 207 78% 60%;
-    --info-foreground: 0 0% 100%;
+    --glass-bg: 0 0% 100% / 0.72;
+    --glass-border: 240 6% 90% / 0.8;
 
     --gradient-primary: linear-gradient(135deg, hsl(42 57% 51%) 0%, hsl(42 65% 58%) 100%);
     --gradient-primary-animated: linear-gradient(270deg, hsl(42 57% 51%), hsl(42 65% 58%), hsl(42 57% 51%));
-    --gradient-success: linear-gradient(135deg, hsl(122 39% 49%) 0%, hsl(122 39% 42%) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(45 100% 45%) 100%);
-    --gradient-danger: linear-gradient(135deg, hsl(4 90% 64%) 0%, hsl(4 90% 58%) 100%);
-    --gradient-info: linear-gradient(135deg, hsl(207 78% 60%) 0%, hsl(207 78% 54%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 38%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(38 92% 44%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(0 84% 52%) 100%);
+    --gradient-info: linear-gradient(135deg, hsl(211 100% 50%) 0%, hsl(211 100% 44%) 100%);
 
-    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-    --shadow-glow: 0 0 40px hsl(42 57% 51% / 0.4);
-    --shadow-glow-success: 0 0 30px hsl(122 39% 49% / 0.3);
-    --shadow-glow-warning: 0 0 30px hsl(45 100% 51% / 0.3);
-    --shadow-glow-danger: 0 0 30px hsl(4 90% 64% / 0.3);
+    --shadow-glass: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    --shadow-glow: 0 8px 30px hsl(42 57% 51% / 0.25);
+    --shadow-glow-success: 0 8px 24px hsl(142 71% 45% / 0.2);
+    --shadow-glow-warning: 0 8px 24px hsl(38 92% 50% / 0.2);
+    --shadow-glow-danger: 0 8px 24px hsl(0 84% 60% / 0.2);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 42 65% 58%;
+    --primary-foreground: 0 0% 8%;
+
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 42 65% 58%;
+    --accent-foreground: 0 0% 8%;
+
+    --success: 142 71% 50%;
+    --success-foreground: 0 0% 8%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 8%;
+
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 100%;
+
+    --info: 211 100% 60%;
+    --info-foreground: 0 0% 8%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 42 65% 58%;
+
+    --glass-bg: 0 0% 9% / 0.72;
+    --glass-border: 0 0% 22% / 0.8;
+
+    --shadow-glass: 0 8px 32px rgba(0,0,0,0.5);
+    --shadow-glow: 0 0 40px hsl(42 65% 58% / 0.35);
+    --shadow-glow-success: 0 0 30px hsl(142 71% 50% / 0.3);
+    --shadow-glow-warning: 0 0 30px hsl(38 92% 55% / 0.3);
+    --shadow-glow-danger: 0 0 30px hsl(0 84% 65% / 0.3);
   }
 }
 
@@ -72,8 +119,23 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    letter-spacing: -0.01em;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.022em;
+    font-weight: 600;
   }
 }
 
@@ -81,5 +143,15 @@ All colors MUST be HSL.
   .animate-gradient {
     background-size: 200% 200%;
     animation: gradient-shift 8s ease infinite;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-tabbar {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   }
 }

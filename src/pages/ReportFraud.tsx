@@ -115,7 +115,7 @@ export default function ReportFraud() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-tabbar md:pb-0">
         <Navigation />
         <div className="container mx-auto px-4 py-16 max-w-lg">
           <GlassCard className="p-10 text-center animate-fade-in">
@@ -159,7 +159,7 @@ export default function ReportFraud() {
   const filledSteps = [upiId.trim(), reason.trim(), details.trim()].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-tabbar md:pb-0">
       <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Hero */}
