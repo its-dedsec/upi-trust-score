@@ -71,7 +71,7 @@ export default function Leaderboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-tabbar md:pb-0">
         <Navigation />
         <div className="container mx-auto px-4 py-20 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary/50 mb-4 animate-pulse">
@@ -109,7 +109,7 @@ export default function Leaderboard() {
   const userRank = leaderboard.findIndex(u => u.user_id === userStats?.user_id) + 1;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-tabbar md:pb-0">
       <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Hero */}

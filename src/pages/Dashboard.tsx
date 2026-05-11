@@ -187,7 +187,7 @@ export default function Dashboard() {
       : "text-success";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-tabbar md:pb-0">
       <Navigation />
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
 
